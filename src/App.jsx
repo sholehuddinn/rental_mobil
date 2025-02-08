@@ -1,12 +1,13 @@
-import './App.css'
+import "./App.css";
+import { RouterProvider } from "react-router-dom";
+import route from "./routes/index.jsx"
 
 function App() {
-
   return (
     <>
-      <h1 className='text-3xl font-bold underline'>kokodk</h1>
+      <RouterProvider router={route}/>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
