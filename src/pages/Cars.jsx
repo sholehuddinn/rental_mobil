@@ -45,7 +45,7 @@ const CarList = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-5">Car List</h1>
+      <h1 className="text-3xl font-bold mb-5">Daftar Mobil</h1>
 
       <div className="bg-white shadow-lg rounded-lg p-4 mb-4 flex flex-col md:flex-row gap-2">
         <input

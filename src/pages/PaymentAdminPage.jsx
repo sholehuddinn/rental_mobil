@@ -8,67 +8,44 @@ const PembayaranAdminPage = () => {
       pesanan_id: 123,
       tanggal_pembayaran: "2022-01-01",
       extend: 0,
-      metode_bayar: "cash",
+      metode_bayar: "Cash",
       total: 100000,
-      created_at: Date.now(),
-      updated_at: Date.now(),
     },
     {
       id: 2,
       pesanan_id: 456,
       tanggal_pembayaran: "2022-02-01",
       extend: 1,
-      metode_bayar: "transfer",
+      metode_bayar: "Transfer",
       total: 200000,
-      created_at: Date.now(),
-      updated_at: Date.now(),
     },
     {
       id: 3,
       pesanan_id: 789,
       tanggal_pembayaran: "2022-03-01",
       extend: 0,
-      metode_bayar: "transfer",
+      metode_bayar: "Transfer",
       total: 300000,
-      created_at: Date.now(),
-      updated_at: Date.now(),
-    }
+    },
   ];
 
   return (
     <div className="container mx-auto p-4">
-      <div className="overflow-x-auto">
-        <table className="table-auto w-full border border-gray-300 text-sm md:text-base">
-          <thead>
-            <tr className="bg-gray-200 text-left">
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Pesanan ID</th>
-              <th className="px-4 py-2">Tanggal</th>
-              <th className="px-4 py-2">Metode Bayar</th>
-              <th className="px-4 py-2">Total</th>
-              <th className="px-4 py-2">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item) => (
-              <tr key={item.id} className="border-t hover:bg-gray-100">
-                <td className="px-4 py-2">{item.id}</td>
-                <td className="px-4 py-2">{item.pesanan_id}</td>
-                <td className="px-4 py-2">{item.tanggal_pembayaran}</td>
-                <td className="px-4 py-2">{item.metode_bayar}</td>
-                <td className="px-4 py-2">Rp {item.total.toLocaleString()}</td>
-                <td className="px-4 py-2">
-                  <Link
-                    to={`/pembayaran/${item.id}`}
-                    className="bg-blue-500 hover:bg-blue-700 text-white text-xs md:text-sm font-bold py-1 px-2 md:py-2 md:px-4 rounded"
-                  >
-                    Detail
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <h1 className="text-2xl font-bold mb-4">Daftar Pembayaran</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.map((item) => (
+          <div key={item.id} className="border rounded-xl shadow-md p-4 bg-white flex flex-col">
+            <h2 className="text-lg font-semibold">Pesanan #{item.pesanan_id}</h2>
+            <p className="text-gray-600">Metode: <span className="font-medium">{item.metode_bayar}</span></p>
+            <p className="text-lg font-bold text-green-600">Rp {item.total.toLocaleString()}</p>
+            <Link
+              to={`/pembayaran/${item.id}`}
+              className="mt-auto bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded-lg text-center"
+            >
+              Lihat Detail
+            </Link>
+          </div>
+        ))}
       </div>
     </div>
   );

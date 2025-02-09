@@ -9,13 +9,18 @@ import Pembayaran from "../pages/PaymentAdminPage.jsx";
 import PembayaranDetails from "../pages/PaymentDetail.jsx";
 import Laporan from "../pages/LaporanAdminPage.jsx";
 import Cars from "../pages/Cars.jsx";
-import Profile from "../pages/profile.jsx"
+import Home from "../pages/home.jsx";
+import User from "../pages/User.jsx";
 
 const route = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
       {
         path: "order",
         element: <Order />,
@@ -41,8 +46,8 @@ const route = createBrowserRouter([
         element: <Cars />,
       },
       {
-        path: "profile",
-        element: <Profile />,
+        path: "user",
+        element: <User />,
       }
     ],
   },

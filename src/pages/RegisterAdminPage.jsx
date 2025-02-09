@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaLock, FaEnvelope } from "react-icons/fa";
+import { FaLock, FaEnvelope, FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const RegisterAdminPage = () => {
@@ -26,6 +26,18 @@ const RegisterAdminPage = () => {
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           
+          <div className="relative">
+            <FaUser className="absolute left-3 top-3 text-gray-500" />
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Name"
+              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+          </div>
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-3 text-gray-500" />
             <input
