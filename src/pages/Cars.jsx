@@ -100,7 +100,7 @@ const CarList = () => {
           <table className="table table-zebra w-full">
             <thead>
               <tr>
-                <th>No</th>
+                <th>ID mobil</th>
                 <th>Merk</th>
                 <th>Nopol</th>
                 <th>Created At</th>
@@ -110,7 +110,7 @@ const CarList = () => {
             <tbody>
               {cars.map((car, index) => (
                 <tr key={car.id}>
-                  <td>{index + 1}</td>
+                  <td>{car.id}</td>
                   <td>{car.name}</td>
                   <td>{car.nopol}</td>
                   <td>{new Date(car.created_at).toLocaleString()}</td>

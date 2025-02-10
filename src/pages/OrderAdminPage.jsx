@@ -8,6 +8,7 @@ const OrderPage = () => {
   const [cars, setCars] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // Ambil daftar order dulu
   const fetchOrders = async () => {
     try {
       const res = await axios.get(
@@ -15,25 +16,28 @@ const OrderPage = () => {
       );
       const orderData = res.data.data;
 
-      const carRequests = orderData.map((order) =>
-        axios.get(
-          `https://api-rentalmobil.csnightdev.com/api/cars/${order.mobil_id}`
-        )
-      );
-
-      const carResponses = await Promise.allSettled(carRequests);
-      const carData = {};
-
-      carResponses.forEach((result, index) => {
-        if (result.status === "fulfilled") {
-          carData[orderData[index].id_mobil] = result.value.data.data;
-        }
-      });
-
-      setOrders(orderData);
-      setCars(carData);
+      setOrders(orderData); // Simpan order dulu
+      fetchCars(orderData); // Ambil data mobil setelahnya
     } catch (error) {
       console.error("Error fetching orders:", error);
+      setLoading(false);
+    }
+  };
+
+  // Ambil data mobil berdasarkan daftar order
+  const fetchCars = async (orderData) => {
+    try {
+      const carData = {};
+      for (const order of orderData) {
+        const res = await axios.get(
+          `https://api-rentalmobil.csnightdev.com/api/cars/${order.mobil_id}`
+        );
+        carData[order.mobil_id] = res.data.data;
+      }
+
+      setCars(carData);
+    } catch (error) {
+      console.error("Error fetching cars:", error);
     } finally {
       setLoading(false);
     }
@@ -62,7 +66,7 @@ const OrderPage = () => {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => {
-            const car = cars[order.id_mobil];
+            const car = cars[order.mobil_id];
 
             return (
               <div

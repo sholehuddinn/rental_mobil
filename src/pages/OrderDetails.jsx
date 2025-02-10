@@ -11,57 +11,58 @@ const OrderDetails = () => {
   const [car, setCar] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Fetch order berdasarkan ID
-  const fetchOrder = async () => {
-    try {
-      const response = await axios.get(
-        `https://api-rentalmobil.csnightdev.com/api/orders/${id}`
-      );
-      const orderData = response.data.data;
-      setOrder(orderData);
-
-      // Setelah order diambil, fetch data mobil dan user
-      fetchDetails(orderData.mobil_id, orderData.user_id);
-    } catch (error) {
-      console.error("Error fetching order:", error);
-    }
-  };
-
-  // Fetch mobil & user berdasarkan ID dari order
-  const fetchDetails = async (mobilId, userId) => {
-    try {
-      const carResponse = await axios.get(
-        `https://api-rentalmobil.csnightdev.com/api/cars/${mobilId}`
-      );
-      setCar(carResponse.data.data);
-
-      const userResponse = await axios.get(
-        `https://api-rentalmobil.csnightdev.com/api/users/${userId}`
-      );
-      setUser(userResponse.data.data);
-    } catch (error) {
-      console.error("Error fetching details:", error);
-    } finally {
-      setLoading(false); // Selesai loading
-    }
-  };
-
-  // Klik tombol delete
-  const handleDelete = async () => {
-    try {
-      await axios.delete(
-        `https://api-rentalmobil.csnightdev.com/api/orders/${id}`
-      );
-      navigate("/order");
-    } catch (error) {
-      console.error("Error deleting order:", error);
-    }
-  };
+  const [tf, setTf] = useState([]);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    fetchOrder();
-  }, [id]); // Fetch ulang jika ID berubah
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Ambil data order berdasarkan ID
+        const response = await axios.get(
+          `https://api-rentalmobil.csnightdev.com/api/orders/${id}`
+        );
+        const orderData = response.data.data;
+        setOrder(orderData);
+
+        // Ambil detail mobil dan user
+        const [carResponse, userResponse] = await Promise.all([
+          axios.get(`https://api-rentalmobil.csnightdev.com/api/cars/${orderData.mobil_id}`),
+          axios.get(`https://api-rentalmobil.csnightdev.com/api/users/${orderData.user_id}`)
+        ]);
+
+        setCar(carResponse.data.data);
+        setUser(userResponse.data.data);
+      } catch (error) {
+        console.error("Error fetching order:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchTransaction = async () => {
+      try {
+        const response = await axios.get(
+          `https://api-rentalmobil.csnightdev.com/api/payments`
+        );
+        setTf(response.data.data);
+      } catch (error) {
+        console.error("Error fetching transaction:", error);
+      }
+    };
+
+    if (id) {
+      fetchData();
+      fetchTransaction();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (order && tf.length > 0) {
+      const isPaid = tf.some((item) => item.pemesanan_id === order.id);
+      setEnabled(isPaid);
+    }
+  }, [order, tf]);
 
   if (loading) {
     return (
@@ -83,8 +84,7 @@ const OrderDetails = () => {
             <span className="font-semibold">Order ID:</span> {order?.id}
           </p>
           <p className="text-lg">
-            <span className="font-semibold">Mobil:</span> {car?.name}{" "}
-            {car?.nopol}
+            <span className="font-semibold">Mobil:</span> {car?.name} {car?.nopol}
           </p>
           <p className="text-lg">
             <span className="font-semibold">Penyewa:</span> {user?.name}
@@ -129,8 +129,20 @@ const OrderDetails = () => {
             Back
           </button>
           <button
-            onClick={handleDelete}
-            className="w-1/2 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md"
+            onClick={async () => {
+              try {
+                await axios.delete(`https://api-rentalmobil.csnightdev.com/api/orders/${id}`);
+                navigate("/order");
+              } catch (error) {
+                console.error("Error deleting order:", error);
+              }
+            }}
+            disabled={enabled}
+            className={`w-1/2 flex items-center justify-center gap-2 font-bold py-3 rounded-lg transition-all shadow-md ${
+              enabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-700 text-white"
+            }`}
           >
             <FaTrash />
             Delete
