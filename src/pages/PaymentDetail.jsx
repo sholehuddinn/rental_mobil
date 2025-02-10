@@ -7,7 +7,7 @@ const PembayaranDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [data, setData] = useState(null); // Awalnya null agar lebih aman
+  const [data, setData] = useState(null); 
 
   const fetchData = async () => {
     try {
@@ -25,7 +25,7 @@ const PembayaranDetail = () => {
       await axios.delete(
         `https://api-rentalmobil.csnightdev.com/api/payments/${id}`
       );
-      navigate('/pembayaran'); // Kembali ke halaman sebelumnya
+      navigate('/pembayaran'); 
     } catch (error) {
       console.error("Error deleting data:", error);
     }
@@ -33,7 +33,7 @@ const PembayaranDetail = () => {
 
   useEffect(() => {
     fetchData();
-  }, [id]); // Tambahkan id agar fetch dijalankan saat id berubah
+  }, [id]); 
 
   if (!data) {
     return (

@@ -16,15 +16,14 @@ const OrderPage = () => {
       );
       const orderData = res.data.data;
 
-      setOrders(orderData); // Simpan order dulu
-      fetchCars(orderData); // Ambil data mobil setelahnya
+      setOrders(orderData); 
+      fetchCars(orderData); 
     } catch (error) {
       console.error("Error fetching orders:", error);
       setLoading(false);
     }
   };
 
-  // Ambil data mobil berdasarkan daftar order
   const fetchCars = async (orderData) => {
     try {
       const carData = {};

@@ -18,14 +18,12 @@ const OrderDetails = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Ambil data order berdasarkan ID
         const response = await axios.get(
           `https://api-rentalmobil.csnightdev.com/api/orders/${id}`
         );
         const orderData = response.data.data;
         setOrder(orderData);
 
-        // Ambil detail mobil dan user
         const [carResponse, userResponse] = await Promise.all([
           axios.get(`https://api-rentalmobil.csnightdev.com/api/cars/${orderData.mobil_id}`),
           axios.get(`https://api-rentalmobil.csnightdev.com/api/users/${orderData.user_id}`)
