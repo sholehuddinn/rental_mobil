@@ -34,7 +34,9 @@ const navbar = () => {
           </div>
         </div>
       </div>
-      <Outlet />
+      <div className="">
+        <Outlet />
+      </div>
     </>
   );
 };
