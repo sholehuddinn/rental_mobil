@@ -74,7 +74,7 @@ const OrderPage = () => {
               >
                 <div>
                   <h2 className="text-lg font-semibold">
-                    {car ? car.name : "Loading..."}
+                    {car ? car.name : "Loading..."} <span className="font-semibold">#{order.id}</span>
                   </h2>
                   <p className="text-gray-600">
                     {car ? car.nopol : "Loading..."}

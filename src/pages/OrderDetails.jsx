@@ -13,6 +13,7 @@ const OrderDetails = () => {
   const [loading, setLoading] = useState(true);
   const [tf, setTf] = useState([]);
   const [enabled, setEnabled] = useState(false);
+  const [isTaken, setIsTaken] = useState(false); // Untuk disable tombol "Diambil"
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,10 +24,15 @@ const OrderDetails = () => {
         );
         const orderData = response.data.data;
         setOrder(orderData);
+        setIsTaken(orderData.status === "Diambil"); // Cek apakah sudah diambil
 
         const [carResponse, userResponse] = await Promise.all([
-          axios.get(`https://api-rentalmobil.csnightdev.com/api/cars/${orderData.mobil_id}`),
-          axios.get(`https://api-rentalmobil.csnightdev.com/api/users/${orderData.user_id}`)
+          axios.get(
+            `https://api-rentalmobil.csnightdev.com/api/cars/${orderData.mobil_id}`
+          ),
+          axios.get(
+            `https://api-rentalmobil.csnightdev.com/api/users/${orderData.user_id}`
+          ),
         ]);
 
         setCar(carResponse.data.data);
@@ -62,6 +68,70 @@ const OrderDetails = () => {
     }
   }, [order, tf]);
 
+  const sendToPay = async () => {
+    if (!order) return;
+
+    try {
+      // Cek apakah pembayaran sebelumnya sudah ada
+      const existingPayment = tf.find((item) => item.pemesanan_id === order.id);
+
+      // Hitung durasi sewa dalam hari
+      const tanggalPinjam = new Date(order.tanggal_pinjam);
+      const tanggalKembali = new Date(order.tanggal_kembali);
+      const durasiSewa = Math.ceil(
+        (tanggalKembali - tanggalPinjam) / (1000 * 60 * 60 * 24)
+      );
+
+      // Cek apakah ini perpanjangan atau pembayaran pertama
+      const isExtend = existingPayment ? existingPayment.extend + 1 : 0;
+
+      // Hitung total harga
+      const totalHarga = durasiSewa * order.harga;
+
+      // Kirim data pembayaran
+      await axios.post("https://api-rentalmobil.csnightdev.com/api/payments", {
+        pemesanan_id: order.id,
+        tanggal_pembayaran: new Intl.DateTimeFormat("en-CA").format(new Date()),
+        extend: isExtend,
+        metode_bayar: "cash",
+        total: totalHarga,
+      });
+
+      alert("Pembayaran berhasil dikirim!");
+
+      await axios.post("https://api-rentalmobil.csnightdev.com/api/reports" ,{
+        tanggal: new Intl.DateTimeFormat("en-CA").format(new Date()),
+        merk_mobil: car.name,
+        jumlah_sewa: 1,
+        pendapatan: totalHarga
+      })
+
+    } catch (error) {
+      console.error("Error saat mengirim pembayaran:", error);
+    }
+  };
+
+  const updateStatus = async () => {
+    if (!order) return;
+
+    try {
+      await axios.put(
+        `https://api-rentalmobil.csnightdev.com/api/orders/${id}`,
+        {
+          ...order,
+          status: "Diambil",
+          _status: true,
+        }
+      );
+
+      setOrder((prev) => ({ ...prev, status: "Diambil" }));
+      setIsTaken(true);
+      alert("Status berhasil diperbarui menjadi 'Diambil'!");
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center mt-8">
@@ -82,7 +152,8 @@ const OrderDetails = () => {
             <span className="font-semibold">Order ID:</span> {order?.id}
           </p>
           <p className="text-lg">
-            <span className="font-semibold">Mobil:</span> {car?.name} {car?.nopol}
+            <span className="font-semibold">Mobil:</span> {car?.name}{" "}
+            {car?.nopol}
           </p>
           <p className="text-lg">
             <span className="font-semibold">Penyewa:</span> {user?.name}
@@ -118,25 +189,28 @@ const OrderDetails = () => {
           </p>
         </div>
 
-        <div className="flex justify-center items-center gap-4 mt-6">
+        <div className="grid grid-cols-2 gap-4 mt-6">
           <button
             onClick={() => navigate("/order")}
-            className="w-1/2 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all shadow-md"
+            className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all shadow-md"
           >
             <FaArrowLeft />
             Back
           </button>
+
           <button
             onClick={async () => {
               try {
-                await axios.delete(`https://api-rentalmobil.csnightdev.com/api/orders/${id}`);
+                await axios.delete(
+                  `https://api-rentalmobil.csnightdev.com/api/orders/${id}`
+                );
                 navigate("/order");
               } catch (error) {
                 console.error("Error deleting order:", error);
               }
             }}
             disabled={enabled}
-            className={`w-1/2 flex items-center justify-center gap-2 font-bold py-3 rounded-lg transition-all shadow-md ${
+            className={`flex items-center justify-center gap-2 font-bold py-3 rounded-lg transition-all shadow-md ${
               enabled
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-500 hover:bg-blue-700 text-white"
@@ -144,6 +218,30 @@ const OrderDetails = () => {
           >
             <FaTrash />
             Delete
+          </button>
+
+          <button
+            onClick={updateStatus}
+            disabled={isTaken}
+            className={`flex items-center justify-center gap-2 font-bold py-3 rounded-lg transition-all shadow-md ${
+              isTaken
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-700 text-white"
+            }`}
+          >
+            Diambil
+          </button>
+
+          <button
+            onClick={sendToPay}
+            disabled={enabled}
+            className={`flex items-center justify-center gap-2 font-bold py-3 rounded-lg transition-all shadow-md ${
+              enabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-700 text-white"
+            }`}
+          >
+            Bayar
           </button>
         </div>
       </div>

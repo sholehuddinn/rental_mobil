@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const CarList = () => {
-  const [cars, setCars] = useState([]); 
+  const [cars, setCars] = useState([]);
   const [newCar, setNewCar] = useState({ name: "", nopol: "" });
   const [editCarData, setEditCarData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -11,7 +11,9 @@ const CarList = () => {
   const getCar = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("https://api-rentalmobil.csnightdev.com/api/cars");
+      const res = await axios.get(
+        "https://api-rentalmobil.csnightdev.com/api/cars"
+      );
       setCars(res.data.data);
     } catch (error) {
       console.error("Error fetching cars:", error);
@@ -27,8 +29,11 @@ const CarList = () => {
   const addCar = async () => {
     setLoadingAction(true);
     try {
-      await axios.post("https://api-rentalmobil.csnightdev.com/api/cars", newCar);
-      setNewCar({ name: "", nopol: "" });
+      await axios.post(
+        "https://api-rentalmobil.csnightdev.com/api/cars",
+        newCar
+      );
+      setNewCar({ name: "", nopol: "", harga: "" });
       getCar();
     } catch (error) {
       console.error("Error adding car:", error);
@@ -40,7 +45,9 @@ const CarList = () => {
   const deleteCar = async (id) => {
     setLoadingAction(true);
     try {
-      await axios.delete(`https://api-rentalmobil.csnightdev.com/api/cars/${id}`);
+      await axios.delete(
+        `https://api-rentalmobil.csnightdev.com/api/cars/${id}`
+      );
       getCar();
     } catch (error) {
       console.error("Error deleting car:", error);
@@ -52,10 +59,14 @@ const CarList = () => {
   const saveEditCar = async () => {
     setLoadingAction(true);
     try {
-      await axios.put(`https://api-rentalmobil.csnightdev.com/api/cars/${editCarData.id}`, {
-        name: editCarData.name,
-        nopol: editCarData.nopol,
-      });
+      await axios.put(
+        `https://api-rentalmobil.csnightdev.com/api/cars/${editCarData.id}`,
+        {
+          name: editCarData.name,
+          nopol: editCarData.nopol,
+          harga: editCarData.harga
+        }
+      );
       setEditCarData(null);
       getCar();
     } catch (error) {
@@ -86,7 +97,19 @@ const CarList = () => {
           onChange={(e) => setNewCar({ ...newCar, nopol: e.target.value })}
           className="input input-bordered w-full md:w-1/3"
         />
-        <button onClick={addCar} className="btn btn-primary w-full md:w-auto" disabled={loadingAction}>
+        <input
+          type="text"
+          name="nopol"
+          placeholder="Harga"
+          value={newCar.harga}
+          onChange={(e) => setNewCar({ ...newCar, harga: e.target.value })}
+          className="input input-bordered w-full md:w-1/3"
+        />
+        <button
+          onClick={addCar}
+          className="btn btn-primary w-full md:w-auto"
+          disabled={loadingAction}
+        >
           {loadingAction ? "Adding..." : "Add"}
         </button>
       </div>
@@ -103,7 +126,7 @@ const CarList = () => {
                 <th>ID mobil</th>
                 <th>Merk</th>
                 <th>Nopol</th>
-                <th>Created At</th>
+                <th>Harga</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -113,7 +136,12 @@ const CarList = () => {
                   <td>{car.id}</td>
                   <td>{car.name}</td>
                   <td>{car.nopol}</td>
-                  <td>{new Date(car.created_at).toLocaleString()}</td>
+                  <td>
+                    {new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                    }).format(car.harga)}
+                  </td>
                   <td className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setEditCarData(car)}
@@ -145,21 +173,41 @@ const CarList = () => {
               type="text"
               value={editCarData.name}
               placeholder="Nama Mobil"
-              onChange={(e) => setEditCarData({ ...editCarData, name: e.target.value })}
+              onChange={(e) =>
+                setEditCarData({ ...editCarData, name: e.target.value })
+              }
               className="input input-bordered w-full mb-2"
             />
             <input
               type="text"
               value={editCarData.nopol}
               placeholder="Nopol"
-              onChange={(e) => setEditCarData({ ...editCarData, nopol: e.target.value })}
+              onChange={(e) =>
+                setEditCarData({ ...editCarData, nopol: e.target.value })
+              }
+              className="input input-bordered w-full mb-2"
+            />
+            <input
+              type="text"
+              value={editCarData.harga}
+              placeholder="Harga"
+              onChange={(e) =>
+                setEditCarData({ ...editCarData, nopol: e.target.value })
+              }
               className="input input-bordered w-full mb-2"
             />
             <div className="flex justify-end gap-2">
-              <button onClick={saveEditCar} className="btn btn-success" disabled={loadingAction}>
+              <button
+                onClick={saveEditCar}
+                className="btn btn-success"
+                disabled={loadingAction}
+              >
                 {loadingAction ? "Saving..." : "Save"}
               </button>
-              <button onClick={() => setEditCarData(null)} className="btn btn-secondary">
+              <button
+                onClick={() => setEditCarData(null)}
+                className="btn btn-secondary"
+              >
                 Cancel
               </button>
             </div>
