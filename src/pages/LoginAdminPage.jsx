@@ -1,20 +1,52 @@
 import { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const LoginAdminPage = () => {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ formData });
+    setLoading(true);
+    if (!formData.username.trim() || !formData.password.trim()) {
+      alert("Username dan password harus diisi!");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "https://api-rentalmobil.csnightdev.com/api/auth",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", 
+          },
+          body: JSON.stringify(formData), 
+        }
+      );
+      const data = await response.json();
+      if (data.data != null) {
+        localStorage.setItem("token", data.data);
+        navigate("/");
+      } else {
+        navigate("/login");
+        alert("Login gagal! Periksa username atau password.");
+      }
+    } catch (error) {
+      alert("Terjadi kesalahan. Coba lagi!");
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,12 +60,12 @@ const LoginAdminPage = () => {
             <label className="input input-bordered flex items-center gap-2">
               <FaUser className="text-gray-500" />
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
                 required
-                placeholder="Email"
+                placeholder="Username"
                 className="grow"
               />
             </label>
@@ -52,15 +84,17 @@ const LoginAdminPage = () => {
               />
             </label>
           </div>
-          <button type="submit" className="btn btn-success w-full text-white hover:bg-green-700">
-            login
+          <button
+            type="submit"
+            className="btn btn-success w-full text-white hover:bg-green-700"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p className="text-center text-gray-600 mt-4">
           Don't have an account?{" "}
-          
           <span className="text-green-700 font-bold cursor-pointer hover:underline">
-            
             <Link to="/register">Sign Up</Link>
           </span>
         </p>
