@@ -11,10 +11,14 @@ const CarList = () => {
   const getCar = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
+      const response = await fetch(
         "https://api-rentalmobil.csnightdev.com/api/cars"
       );
-      setCars(res.data.data);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      setCars(data.data);
     } catch (error) {
       console.error("Error fetching cars:", error);
     } finally {
@@ -29,10 +33,21 @@ const CarList = () => {
   const addCar = async () => {
     setLoadingAction(true);
     try {
-      await axios.post(
+      const response = await fetch(
         "https://api-rentalmobil.csnightdev.com/api/cars",
-        newCar
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newCar),
+        }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       setNewCar({ name: "", nopol: "", harga: "" });
       getCar();
     } catch (error) {
@@ -45,9 +60,17 @@ const CarList = () => {
   const deleteCar = async (id) => {
     setLoadingAction(true);
     try {
-      await axios.delete(
-        `https://api-rentalmobil.csnightdev.com/api/cars/${id}`
+      const response = await fetch(
+        `https://api-rentalmobil.csnightdev.com/api/cars/${id}`,
+        {
+          method: "DELETE",
+        }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       getCar();
     } catch (error) {
       console.error("Error deleting car:", error);
@@ -59,14 +82,25 @@ const CarList = () => {
   const saveEditCar = async () => {
     setLoadingAction(true);
     try {
-      await axios.put(
+      const response = await fetch(
         `https://api-rentalmobil.csnightdev.com/api/cars/${editCarData.id}`,
         {
-          name: editCarData.name,
-          nopol: editCarData.nopol,
-          harga: editCarData.harga
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: editCarData.name,
+            nopol: editCarData.nopol,
+            harga: editCarData.harga,
+          }),
         }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       setEditCarData(null);
       getCar();
     } catch (error) {

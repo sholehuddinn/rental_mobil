@@ -1,26 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 
 const PembayaranAdminPage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetch = async () => {
+  const fetchData = async () => {
     try {
-      const response = await axios.get(
+      const response = await fetch(
         "https://api-rentalmobil.csnightdev.com/api/payments"
       );
-      setData(response.data.data);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setData(data.data);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching payments:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetch();
+    fetchData();
   }, []);
 
   if (loading)
@@ -39,9 +44,7 @@ const PembayaranAdminPage = () => {
             key={item.id}
             className="border rounded-xl shadow-md p-4 bg-white flex flex-col"
           >
-            <h2 className="text-lg font-semibold">
-              Pembayaran #{item.id}
-            </h2>
+            <h2 className="text-lg font-semibold">Pembayaran #{item.id}</h2>
             <p className="text-gray-600">
               Metode: <span className="font-medium">{item.metode_bayar}</span>
             </p>

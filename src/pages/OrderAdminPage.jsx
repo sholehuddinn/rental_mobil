@@ -11,13 +11,19 @@ const OrderPage = () => {
   // Ambil daftar order dulu
   const fetchOrders = async () => {
     try {
-      const res = await axios.get(
+      const response = await fetch(
         "https://api-rentalmobil.csnightdev.com/api/orders"
       );
-      const orderData = res.data.data;
 
-      setOrders(orderData); 
-      fetchCars(orderData); 
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const orderData = data.data;
+
+      setOrders(orderData);
+      fetchCars(orderData);
     } catch (error) {
       console.error("Error fetching orders:", error);
       setLoading(false);
@@ -28,10 +34,16 @@ const OrderPage = () => {
     try {
       const carData = {};
       for (const order of orderData) {
-        const res = await axios.get(
+        const response = await fetch(
           `https://api-rentalmobil.csnightdev.com/api/cars/${order.mobil_id}`
         );
-        carData[order.mobil_id] = res.data.data;
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        carData[order.mobil_id] = data.data;
       }
 
       setCars(carData);
@@ -74,7 +86,8 @@ const OrderPage = () => {
               >
                 <div>
                   <h2 className="text-lg font-semibold">
-                    {car ? car.name : "Loading..."} <span className="font-semibold">#{order.id}</span>
+                    {car ? car.name : "Loading..."}{" "}
+                    <span className="font-semibold">#{order.id}</span>
                   </h2>
                   <p className="text-gray-600">
                     {car ? car.nopol : "Loading..."}

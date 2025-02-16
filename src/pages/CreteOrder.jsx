@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 
 const CreteOrder = () => {
@@ -8,10 +7,16 @@ const CreteOrder = () => {
 
   const getCar = async () => {
     try {
-      const res = await axios.get(
+      const response = await fetch(
         "https://api-rentalmobil.csnightdev.com/api/cars"
       );
-      setCars(res.data.data);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setCars(data.data);
     } catch (error) {
       console.error("Error fetching cars:", error);
     } finally {
@@ -34,7 +39,6 @@ const CreteOrder = () => {
   return (
     <div className="space-y-4 p-5">
       {cars.map((car) => {
-
         return (
           <div
             key={car.id}
@@ -45,9 +49,10 @@ const CreteOrder = () => {
                 {car ? car.name : "Loading..."}
               </h2>
               <p className="text-gray-600">{car ? car.nopol : "Loading..."}</p>
+              <p className="text-gray-500 text-sm">Harga: Rp. {car.harga}</p>
             </div>
             <Link
-            to={`/order/create/${car.id}`}
+              to={`/order/create/${car.id}`}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
               Pesan

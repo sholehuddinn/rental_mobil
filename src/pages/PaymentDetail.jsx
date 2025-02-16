@@ -7,14 +7,20 @@ const PembayaranDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [data, setData] = useState(null); 
+  const [data, setData] = useState(null);
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(
+      const response = await fetch(
         `https://api-rentalmobil.csnightdev.com/api/payments/${id}`
       );
-      setData(res.data.data);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setData(data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -22,18 +28,26 @@ const PembayaranDetail = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(
-        `https://api-rentalmobil.csnightdev.com/api/payments/${id}`
+      const response = await fetch(
+        `https://api-rentalmobil.csnightdev.com/api/payments/${id}`,
+        {
+          method: "DELETE",
+        }
       );
-      navigate('/pembayaran'); 
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      navigate("/pembayaran");
     } catch (error) {
       console.error("Error deleting data:", error);
     }
-  }
+  };
 
   useEffect(() => {
     fetchData();
-  }, [id]); 
+  }, [id]);
 
   if (!data) {
     return (
@@ -82,7 +96,7 @@ const PembayaranDetail = () => {
             <FaArrowLeft />
             Back
           </button>
-          <button 
+          <button
             className="w-1/2 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md"
             onClick={handleDelete}
           >

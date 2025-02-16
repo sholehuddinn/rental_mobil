@@ -10,14 +10,19 @@ const LaporanAdminPage = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(
-        "https://api-rentalmobil.csnightdev.com/api/reports"
-      );
-      setData(res.data.data);
+      const response = await fetch("https://api-rentalmobil.csnightdev.com/api/reports");
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      setData(data.data);
     } catch (error) {
       console.error("Gagal mengambil data laporan:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchData();

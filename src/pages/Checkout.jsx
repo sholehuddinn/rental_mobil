@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 
 const RegisterUser = () => {
   const { id } = useParams();
@@ -8,7 +7,7 @@ const RegisterUser = () => {
   const [user, setUser] = useState({
     username: "",
     name: "",
-    password: "guest123",
+    password: "1234",
   });
 
   const [errors, setErrors] = useState({});
@@ -29,13 +28,25 @@ const RegisterUser = () => {
     }
 
     try {
-      const res = await axios.post(
+      const response = await fetch(
         "https://api-rentalmobil.csnightdev.com/api/users",
-        user
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(user),
+        }
       );
-      const newUserId = res.data.data.id;
 
-      // Redirect ke halaman checkout dengan userId dan mobilId
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const newUserId = data.data.id;
+
       navigate(`/checkout/${id}/${newUserId}`);
     } catch (error) {
       console.error("Error registering user:", error);
@@ -53,7 +64,9 @@ const RegisterUser = () => {
             value={user.username}
             onChange={(e) => setUser({ ...user, username: e.target.value })}
           />
-          {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+          {errors.username && (
+            <p className="text-red-500 text-sm">{errors.username}</p>
+          )}
         </div>
 
         <div>
@@ -67,7 +80,9 @@ const RegisterUser = () => {
           {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
         </div>
 
-        <button type="submit" className="btn btn-primary w-full">Lanjut ke Checkout</button>
+        <button type="submit" className="btn btn-primary w-full">
+          Lanjut ke Checkout
+        </button>
       </form>
     </div>
   );

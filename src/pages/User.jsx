@@ -1,24 +1,32 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 
 const User = () => {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const response = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await axios.get("https://api-rentalmobil.csnightdev.com/api/users");
-      setData(res.data.data);
+      const response = await fetch("https://api-rentalmobil.csnightdev.com/api/users");
+  
+      console.log("Response status:", response.status); // Debugging log
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      setData(data.data);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
-    response();
+    fetchUsers();
   }, []);
 
   const handleSearch = (e) => {

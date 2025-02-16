@@ -30,7 +30,7 @@ const Navbar = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json(); // Ambil response JSON
+      const data = await response.json(); 
 
       if (Array.isArray(data.data)) {
         const userData = data.data.find((user) => user.token === token);
