@@ -8,9 +8,9 @@ const Checkout = () => {
   const [user, setUser] = useState({
     name: "",
     username: "",
-    password: "1234",
     address: "",
     phone: "",
+    _method: "PUT",
   });
 
   const [order, setOrder] = useState({
@@ -23,6 +23,7 @@ const Checkout = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isUserUpdated, setIsUserUpdated] = useState(false);  // Track if user is updated
 
   // Fetch user data
   const fetchUsers = async () => {
@@ -66,7 +67,6 @@ const Checkout = () => {
     fetchUsers();
   }, [id]);
 
-  // Hitung total harga
   const calculateTotal = () => {
     if (order.tanggal_pinjam && order.tanggal_kembali) {
       const start = dayjs(order.tanggal_pinjam);
@@ -108,25 +108,34 @@ const Checkout = () => {
     }
 
     try {
-      // Update user
-      const updateUserResponse = await fetch(
+      await fetch(
         `https://api-rentalmobil.csnightdev.com/api/users/${userId}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(user),
+          body: JSON.stringify({
+            _method: user._method,
+            name: user.name,
+            username: user.username,
+            address: user.address,
+            phone: user.phone,
+          }),
         }
       );
 
-      if (!updateUserResponse.ok) {
-        throw new Error(
-          `Gagal update user! Status: ${updateUserResponse.status}`
-        );
-      }
+      const orderData = {
+        mobil_id: Number(order.mobil_id), // Pastikan dikirim sebagai number
+        user_id: Number(order.user_id), // Pastikan dikirim sebagai number
+        harga: calculateTotal(), // Kirim harga tanpa format IDR
+        tanggal_pinjam: order.tanggal_pinjam,
+        tanggal_kembali: order.tanggal_kembali,
+        status: order.status,
+      };
 
-      // Buat pesanan baru
+      console.log("Mengirim data pesanan:", orderData);
+
       const createOrderResponse = await fetch(
         "https://api-rentalmobil.csnightdev.com/api/orders",
         {
@@ -134,11 +143,13 @@ const Checkout = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ ...order, harga: calculateTotal() }),
+          body: JSON.stringify(orderData),
         }
       );
 
       if (!createOrderResponse.ok) {
+        const errorResponse = await createOrderResponse.json();
+        console.error("Gagal membuat pesanan:", errorResponse);
         throw new Error(
           `Gagal membuat pesanan! Status: ${createOrderResponse.status}`
         );
@@ -147,6 +158,41 @@ const Checkout = () => {
       alert("Pesanan berhasil dibuat!");
     } catch (error) {
       console.error("Error submitting order:", error);
+      alert("Terjadi kesalahan saat membuat pesanan!");
+    }
+  };
+
+  const handleUpdateUser = async () => {
+    try {
+      const updatedUserResponse = await fetch(
+        `https://api-rentalmobil.csnightdev.com/api/users/${userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: user.name,
+            username: user.username,
+            address: user.address,
+            phone: user.phone,
+          }),
+        }
+      );
+
+      if (!updatedUserResponse.ok) {
+        const errorResponse = await updatedUserResponse.json();
+        console.error("Gagal memperbarui data user:", errorResponse);
+        throw new Error(
+          `Gagal memperbarui data user! Status: ${updatedUserResponse.status}`
+        );
+      }
+
+      setIsUserUpdated(true);
+      alert("Data user berhasil diperbarui!");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Terjadi kesalahan saat memperbarui data user!");
     }
   };
 
@@ -214,6 +260,16 @@ const Checkout = () => {
           )}
         </div>
 
+        {!isUserUpdated && (
+        <button
+          type="button"
+          onClick={handleUpdateUser}
+          className="btn btn-secondary w-full mt-4"
+        >
+          Update User
+        </button>
+      )}
+
         {/* Form Tanggal Pinjam */}
         <div>
           <label className="label">Tanggal Pinjam</label>
@@ -259,6 +315,8 @@ const Checkout = () => {
           Buat Pesanan
         </button>
       </form>
+
+      
     </div>
   );
 };
